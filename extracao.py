@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 
 URL_DO_SITE = 'https://app2.pontomais.com.br/login' 
 
@@ -30,11 +31,28 @@ def relatorio_colaboradores():
     wait = WebDriverWait(navegador, 10)
 
     try:
+        LOGIN_EMAIL = 'MICHAEL'
+        LOGIN_SENHA = 'TESTE'
+
         print(f"Acessando o site: {URL_DO_SITE}")
         navegador.get(URL_DO_SITE)
         navegador.maximize_window()
 
         print("\n--- AÇÃO MANUAL NECESSÁRIA ---")
+        seletor_email = f"input[data-testid='login-input']"
+        campo_email = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, seletor_email)))
+        print("Preenchendo e-mail...")
+        campo_email.send_keys({LOGIN_EMAIL})
+        time.sleep(3)
+        campo_email.send_keys(Keys.TAB)
+
+        time.sleep(3)
+
+        campo_ativo = navegador.switch_to.active_element
+        print("Preenchendo senha...")
+        campo_ativo.send_keys({LOGIN_SENHA})
+
+ 
         input(">>> Após fazer o login no navegador, volte aqui e pressione Enter para continuar...")
         
         print("\nContinuando a automação...")
