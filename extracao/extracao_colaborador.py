@@ -6,10 +6,18 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException
+import os
 
 URL_DO_SITE = 'https://app2.pontomais.com.br/login' 
 LOGIN_EMAIL = '10785242970'
 LOGIN_SENHA = '12345678'
+
+# Pega o caminho absoluto do diretório onde o script está sendo executado
+diretorio_do_projeto = os.path.dirname(os.path.abspath(__file__))
+# Sobe um nível no caminho para chegar na pasta que contém o projeto
+diretorio_superior = os.path.dirname(diretorio_do_projeto)
+# Monta o caminho final para a pasta "planilhas"
+pasta_download = os.path.join(diretorio_superior, "planilhas")
 
 def relatorio_colaboradores():
     # --- Configuração do Navegador ---
@@ -23,7 +31,11 @@ def relatorio_colaboradores():
     options.add_experimental_option("useAutomationExtension", False)
     # Criando a instância do navegador com as opções configuradas
 
-    pasta_download = r"C:\Users\taina.dreissig\Documents\GitHub\automacao-pontoMais\planilhas"
+    # Verifica se a pasta "planilhas" já existe no local desejado
+    if not os.path.exists(pasta_download):
+    # Se não existir, cria a pasta
+        os.makedirs(pasta_download)
+
     prefs = {
         "download.default_directory": pasta_download,
         "download.prompt_for_download": False,
