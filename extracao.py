@@ -51,6 +51,8 @@ def relatorio_colaboradores():
         campo_ativo = navegador.switch_to.active_element
         print("Preenchendo senha...")
         campo_ativo.send_keys({LOGIN_SENHA})
+        campo_ativo.send_keys(Keys.TAB)
+        campo_ativo.send_keys(Keys.ENTER)
 
  
         input(">>> Após fazer o login no navegador, volte aqui e pressione Enter para continuar...")
