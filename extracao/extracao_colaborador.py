@@ -7,10 +7,18 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException
 import os
+from dotenv import load_dotenv
+
+# Carrega as variáveis do arquivo .env para o ambiente do sistema
+load_dotenv()
 
 URL_DO_SITE = 'https://app2.pontomais.com.br/login' 
-LOGIN_EMAIL = '10785242970'
-LOGIN_SENHA = '12345678'
+LOGIN_EMAIL = os.getenv('LOGIN_EMAIL')
+LOGIN_SENHA = os.getenv('LOGIN_SENHA')
+
+# Verificação opcional para garantir que as variáveis foram carregadas
+if not LOGIN_EMAIL or not LOGIN_SENHA:
+    print("As credenciais LOGIN_EMAIL e LOGIN_SENHA não foram encontradas no arquivo .env")
 
 # Pega o caminho absoluto do diretório onde o script está sendo executado
 diretorio_do_projeto = os.path.dirname(os.path.abspath(__file__))
