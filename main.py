@@ -11,7 +11,7 @@ def script_sequencial(caminho):
             check=True, 
             capture_output=True,
             text=True,
-            encoding='utf-8'
+            encoding='cp1252' 
         )
 
         print(f"Saída de '{caminho}':\n{processo.stdout}")
@@ -38,7 +38,7 @@ def main():
         'extracao/extracao_colaborador.py',
         'extracao/extracao_ponto.py',
         'extracao/extracao_turno.py',
-        'transformacao/transformacao.py'
+        # 'transformacao/transformacao.py'
     ]
 
     print("INICIANDO PROCESSO DE EXECUÇÃO SEQUENCIAL")

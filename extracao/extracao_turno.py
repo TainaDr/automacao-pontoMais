@@ -6,10 +6,26 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException
+import os
+from dotenv import load_dotenv
+
+# Carrega as variáveis do arquivo .env para o ambiente do sistema
+load_dotenv()
 
 URL_DO_SITE = 'https://app2.pontomais.com.br/login' 
-LOGIN_EMAIL = '10785242970'
-LOGIN_SENHA = '12345678'
+LOGIN_EMAIL = os.getenv('LOGIN_EMAIL')
+LOGIN_SENHA = os.getenv('LOGIN_SENHA')
+
+# Verificação opcional para garantir que as variáveis foram carregadas
+if not LOGIN_EMAIL or not LOGIN_SENHA:
+    print("As credenciais LOGIN_EMAIL e LOGIN_SENHA não foram encontradas no arquivo .env")
+
+# Pega o caminho absoluto do diretório onde o script está sendo executado
+diretorio_do_projeto = os.path.dirname(os.path.abspath(__file__))
+# Sobe um nível no caminho para chegar na pasta que contém o projeto
+diretorio_superior = os.path.dirname(diretorio_do_projeto)
+# Monta o caminho final para a pasta "planilhas"
+pasta_download = os.path.join(diretorio_superior, "planilhas")
 
 def relatorio_turno():
     # --- Configuração do Navegador ---
@@ -23,7 +39,11 @@ def relatorio_turno():
     options.add_experimental_option("useAutomationExtension", False)
     # Criando a instância do navegador com as opções configuradas
 
-    pasta_download = r"C:\Users\taina.dreissig\Documents\GitHub\automacao-pontoMais\planilhas"
+   # Verifica se a pasta "planilhas" já existe no local desejado
+    if not os.path.exists(pasta_download):
+    # Se não existir, cria a pasta
+        os.makedirs(pasta_download)
+
     prefs = {
         "download.default_directory": pasta_download,
         "download.prompt_for_download": False,
@@ -47,15 +67,15 @@ def relatorio_turno():
         campo_email = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, seletor_email)))
         print("Preenchendo e-mail...")
         campo_email.send_keys(LOGIN_EMAIL)
-        time.sleep(1) 
+        time.sleep(2) 
         campo_email.send_keys(Keys.TAB)
         
-        time.sleep(1)
+        time.sleep(2)
 
         campo_ativo = navegador.switch_to.active_element
         print("Preenchendo senha...")
         campo_ativo.send_keys(LOGIN_SENHA)
-        time.sleep(1)
+        time.sleep(2)
         
         botao_login = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'Entrar')]")))
         botao_login.click()
@@ -66,7 +86,7 @@ def relatorio_turno():
         menu_relatorios.click()
         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Tipo do relatório')]")))
         print("Página de relatórios carregada.")
-        time.sleep(2)
+        time.sleep(3)
 
         xpath_dropdown_container = "//pm-select[.//span[@title='Tipo do relatório']]//div[contains(@class, 'ng-select-container')]"
         dropdown_alvo = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_dropdown_container)))
@@ -91,7 +111,7 @@ def relatorio_turno():
         print("Digitando 'Turnos'...")
         campo_busca_dropdown.clear()
         campo_busca_dropdown.send_keys("Turnos")
-        time.sleep(1)
+        time.sleep(4)
 
         print("Procurando e clicando na opção 'Turnos'...")
         opcao_turnos = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Turnos')]")))
@@ -100,11 +120,11 @@ def relatorio_turno():
         print("Relatório 'Turnos' selecionado com sucesso!")
         
         # Etapa de Download 
-        time.sleep(1) 
+        time.sleep(2) 
         print("Clicando no botão 'Baixar'...")
         botao_baixar = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), ' Baixar ')]")))
         botao_baixar.click()
-        time.sleep(1)
+        time.sleep(2)
         print("Selecionando o formato 'XLS' para download...")
         opcao_xls = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), ' XLS ')]")))
         opcao_xls.click()

@@ -67,15 +67,15 @@ def relatorio_colaboradores():
         campo_email = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, seletor_email)))
         print("Preenchendo e-mail...")
         campo_email.send_keys(LOGIN_EMAIL)
-        time.sleep(1) 
+        time.sleep(2) 
         campo_email.send_keys(Keys.TAB)
         
-        time.sleep(1)
+        time.sleep(2)
 
         campo_ativo = navegador.switch_to.active_element
         print("Preenchendo senha...")
         campo_ativo.send_keys(LOGIN_SENHA)
-        time.sleep(1)
+        time.sleep(2)
         
         botao_login = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'Entrar')]")))
         botao_login.click()
@@ -86,7 +86,7 @@ def relatorio_colaboradores():
         menu_relatorios.click()
         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Tipo do relatório')]")))
         print("Página de relatórios carregada.")
-        time.sleep(2)
+        time.sleep(3)
 
         xpath_dropdown_container = "//pm-select[.//span[@title='Tipo do relatório']]//div[contains(@class, 'ng-select-container')]"
         dropdown_alvo = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_dropdown_container)))
@@ -111,7 +111,7 @@ def relatorio_colaboradores():
         print("Digitando 'Colaboradores'...")
         campo_busca_dropdown.clear()
         campo_busca_dropdown.send_keys("Colaboradores")
-        time.sleep(1)
+        time.sleep(4)
 
         print("Procurando e clicando na opção 'Colaboradores'...")
         opcao_colaboradores = wait.until(
@@ -122,11 +122,11 @@ def relatorio_colaboradores():
         print("Relatório 'Colaboradores' selecionado com sucesso!")
         
         # Etapa de Download 
-        time.sleep(1) 
+        time.sleep(2) 
         print("Clicando no botão 'Baixar'...")
         botao_baixar = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), ' Baixar ')]")))
         botao_baixar.click()
-        time.sleep(1)
+        time.sleep(2)
         print("Selecionando o formato 'XLS' para download...")
         opcao_xls = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), ' XLS ')]")))
         opcao_xls.click()
