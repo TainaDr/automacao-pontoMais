@@ -1,3 +1,3 @@
-# Ignorar a pasta de planilhas geradas
 planilhas/
 .env
+relatorio/

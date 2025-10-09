@@ -1,44 +1,46 @@
 import subprocess
 import sys
 import time
+import os
 
 def script_sequencial(caminho):
     print(f"INICIANDO: {caminho}...")
     
     try:
+        caminho_absoluto = os.path.abspath(caminho)
+        pasta_do_script = os.path.dirname(caminho_absoluto)
+
         processo = subprocess.run(
-            [sys.executable, caminho], 
-            check=True, 
+            [sys.executable, caminho_absoluto],
+            check=True,
             capture_output=True,
             text=True,
-            encoding='cp1252' 
+            encoding='cp1252',
+            cwd=pasta_do_script  
         )
 
         print(f"Saída de '{caminho}':\n{processo.stdout}")
-        print(f"[SUCESSO] O script {caminho} foi concluído com êxito.\n")
-        return True # Retorna True em caso de sucesso
+        print(f"O script {caminho} foi concluído com êxito.\n")
+        return True
 
     except FileNotFoundError:
-        print(f"[ERRO FATAL] O arquivo '{caminho}' não foi encontrado.")
-        return False # Retorna False em caso de erro
+        print(f"O arquivo '{caminho}' não foi encontrado.")
+        return False
 
     except subprocess.CalledProcessError as e:
-        print(f"[ERRO FATAL] O script {caminho} falhou.")
+        print(f"O script {caminho} falhou.")
         print(f"Código de saída: {e.returncode}")
         print(f"Saída de erro:\n{e.stderr}")
-        return False # Retorna False em caso de erro
+        return False
         
     except Exception as e:
-        print(f"[ERRO INESPERADO] Ocorreu um erro não identificado ao executar {caminho}: {e}")
+        print(f"Ocorreu um erro ao executar {caminho}: {e}")
         return False
 
 def main():
-    # Define aqui a lista e a ordem dos scripts 
     scripts_para_executar = [
-        'extracao/extracao_colaborador.py',
-        'extracao/extracao_ponto.py',
-        'extracao/extracao_turno.py',
-        # 'transformacao/transformacao.py'
+        'extracao/extracao.py',
+        'transformacao/transformacao.py'
     ]
 
     print("INICIANDO PROCESSO DE EXECUÇÃO SEQUENCIAL")
