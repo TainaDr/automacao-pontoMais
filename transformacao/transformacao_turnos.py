@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import glob
-
+#Michael revisar aqui
 pasta_planilhas = '../planilhas'
 nome_arquivo_saida = 'turnos_extraidos.xlsx'
 
@@ -15,7 +15,6 @@ if not lista_arquivos:
 else:
     nome_arquivo_entrada = max(lista_arquivos, key=os.path.getmtime)
     print(f" Arquivo mais recente encontrado: '{nome_arquivo_entrada}'")
-    print("Iniciando o processamento...")
 
     try:
         df = pd.read_excel(nome_arquivo_entrada, header=None, engine='openpyxl', dtype={2: str})
