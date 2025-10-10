@@ -4,7 +4,7 @@ import time
 import os
 
 def script_sequencial(caminho):
-    print(f"INICIANDO: {caminho}...")
+    print(f"Iniciando: {caminho}...")
     
     try:
         caminho_absoluto = os.path.abspath(caminho)
@@ -40,10 +40,11 @@ def script_sequencial(caminho):
 def main():
     scripts_para_executar = [
         'extracao/extracao.py',
+        'transformacao/transformacao_turnos.py'
         'transformacao/transformacao.py'
     ]
 
-    print("INICIANDO PROCESSO DE EXECUÇÃO SEQUENCIAL")
+    print("Iniciando o processo de execução sequencial")
     
     inicio_total = time.time()
 
@@ -55,7 +56,7 @@ def main():
     fim_total = time.time()
     tempo_total = fim_total - inicio_total
     
-    print(f"PROCESSO FINALIZADO em {tempo_total:.2f} segundos.")
+    print(f"Processo finalizado em {tempo_total:.2f} segundos.")
 
 if __name__ == "__main__":
     main()

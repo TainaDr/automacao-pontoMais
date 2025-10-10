@@ -236,6 +236,54 @@ def relatorio_colaboradores():
         navegador.execute_script("arguments[0].click();", opcao_turnos)
 
         print("Relatório 'Turnos' selecionado com sucesso!")
+
+        xpath_dropdown_container_agrupar = "//pm-select[.//span[@title='Agrupar por']]//div[contains(@class, 'ng-select-container')]"
+        dropdown_alvo = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_dropdown_container_agrupar)))
+
+        print("Abrindo dropdown Agrupar por...")
+        navegador.execute_script("arguments[0].scrollIntoView(true);", dropdown_alvo)
+        ActionChains(navegador).move_to_element(dropdown_alvo).click().perform()
+
+        # Verifica se o painel abriu
+        try:
+            wait.until(EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'ng-dropdown-panel')]")))
+            print("Dropdown aberto com sucesso!")
+        except TimeoutException:
+            print("Falha: dropdown ainda não abriu. Tentando clicar novamente com JavaScript...")
+            navegador.execute_script("arguments[0].click();", dropdown_alvo)
+            wait.until(EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'ng-dropdown-panel')]")))
+
+        print("Localizando campo de busca dentro do dropdown...")
+
+        print("Procurando e clicando na opção 'Turno'...")
+        opcao_turnos = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[normalize-space()='Turno']")))
+        navegador.execute_script("arguments[0].click();", opcao_turnos)
+
+        print("Relatório 'Turno' selecionado com sucesso!")
+
+        xpath_dropdown_container_agrupar = "//pm-select[.//span[@title='Filtrar por']]//div[contains(@class, 'ng-select-container')]"
+        dropdown_alvo = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_dropdown_container_agrupar)))
+
+        print("Abrindo dropdown Filtrar por...")
+        navegador.execute_script("arguments[0].scrollIntoView(true);", dropdown_alvo)
+        ActionChains(navegador).move_to_element(dropdown_alvo).click().perform()
+
+        # Verifica se o painel abriu
+        try:
+            wait.until(EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'ng-dropdown-panel')]")))
+            print("Dropdown aberto com sucesso!")
+        except TimeoutException:
+            print("Falha: dropdown ainda não abriu. Tentando clicar novamente com JavaScript...")
+            navegador.execute_script("arguments[0].click();", dropdown_alvo)
+            wait.until(EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'ng-dropdown-panel')]")))
+
+        print("Localizando campo de busca dentro do dropdown...")
+
+        print("Procurando e clicando na opção 'Tipo de turno'...")
+        opcao_turnos = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Tipo de turno')]")))
+        navegador.execute_script("arguments[0].click();", opcao_turnos)
+
+        print("Relatório 'Tipo de turno' selecionado com sucesso!")
         
         # Etapa de Download 
         time.sleep(2) 
