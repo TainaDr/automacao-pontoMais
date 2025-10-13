@@ -40,7 +40,7 @@ def script_sequencial(caminho):
 def main():
     scripts_para_executar = [
         'extracao/extracao.py',
-        'transformacao/transformacao_turnos.py'
+        'transformacao/transformacao_turnos.py',
         'transformacao/transformacao.py'
     ]
 
