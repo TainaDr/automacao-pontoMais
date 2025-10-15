@@ -2,7 +2,6 @@ import pandas as pd
 import os
 import datetime
 from openpyxl.utils import get_column_letter
-import openpyxl
 import glob
 
 diretorio_planilhas = '../planilhas'
@@ -19,7 +18,7 @@ colunas_a_remover_mapa = {
         'PIS', 'Cargo', 'CPF', 'E-mail', 'Centro de custo', 'Data de admissão'
     ],
     'turnos': [
-        'Limite de horas extras', 'Tipo', 'Virada do turno'
+        'Limite de horas extras', 'Tipo', '1ª Saída prevista', '2ª Saída prevista', 'Virada do turno'
     ],
     'registros_de_ponto': [
         'Equipe', 'Turno'
