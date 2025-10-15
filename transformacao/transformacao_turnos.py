@@ -36,7 +36,7 @@ else:
                     codigo_bruto, descricao = partes
                     codigo_limpo = codigo_bruto.strip().lstrip('0')
                     dados_processados.append({
-                        'codigo': codigo_limpo,
+                        'codigo': int(codigo_limpo),
                         'descrição': descricao.strip()
                     })
             
