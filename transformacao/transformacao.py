@@ -2,6 +2,8 @@ import pandas as pd
 import os
 import datetime
 from openpyxl.utils import get_column_letter
+from openpyxl import load_workbook
+from openpyxl.styles import Font
 import glob
 
 diretorio_planilhas = '../planilhas'
@@ -13,7 +15,7 @@ linhas_pular = 2
 linhas_pular_ponto = 3
 indice_cabecalho = 0
 
-colunas_a_remover_mapa = {
+colunas_a_remover = {
     'colaboradores': [
         'PIS', 'Cargo', 'CPF', 'E-mail', 'Centro de custo', 'Data de admissão'
     ],
@@ -30,6 +32,7 @@ timestamp_diario = data_atual.strftime("%Y-%m-%d")
 nome_arquivo = f'Pontomais-unificado_{timestamp_diario}.xlsx'
 arquivo_saida_final = os.path.join(diretorio_relatorio, nome_arquivo)
 
+# Obtem arquivos mais recentes 
 def obter_arquivos(diretorio, quantidade):
     print(f"Buscando os {quantidade} arquivos mais recentes em '{diretorio}'...")
     caminho_completo = os.path.join(diretorio, '*.xlsx')
@@ -42,6 +45,7 @@ def obter_arquivos(diretorio, quantidade):
     lista_de_arquivos.sort(key=os.path.getmtime)
     return lista_de_arquivos[:quantidade]
 
+# Gera os nomes dos relatórios
 def nomes_relatorios(lista_arquivos):
     nomes = []
     for arquivo in lista_arquivos:
@@ -50,6 +54,7 @@ def nomes_relatorios(lista_arquivos):
         nomes.append(f'Relatório {nome_limpo}')
     return nomes
 
+# Unifica as planilhas
 def unificar_planilhas(lista_arquivos, chaves_cabecalho, header_row_index):
     lista_de_dados = []
     print("\nIniciando o processo de unificação...")
@@ -85,7 +90,7 @@ def unificar_planilhas(lista_arquivos, chaves_cabecalho, header_row_index):
         report_name = str(col_tupla[0]).lower()
         column_name = str(col_tupla[1])
 
-        for keyword, column_list in colunas_a_remover_mapa.items():
+        for keyword, column_list in colunas_a_remover.items():
             if keyword in report_name and column_name in column_list:
                 colunas_a_remover_final.append(col_tupla)
                 break
@@ -97,7 +102,7 @@ def unificar_planilhas(lista_arquivos, chaves_cabecalho, header_row_index):
         print("   - Nenhuma coluna para remover foi encontrada.")
 
     return dados_unificados
-
+    
 def colaboradores_faltantes(dados_unificados, arquivos, linhas_pular=2, linhas_pular_ponto=3):
     print("\nIniciando comparação entre Colaboradores e Registros de Ponto...")
 
@@ -113,66 +118,82 @@ def colaboradores_faltantes(dados_unificados, arquivos, linhas_pular=2, linhas_p
 
     if not arquivo_colaboradores or not arquivo_ponto:
         print("ERRO: Não foi possível localizar os arquivos de colaboradores ou de registros de ponto.")
-        return dados_unificados
+        return dados_unificados, pd.DataFrame()
+
+    df_colab = pd.read_excel(arquivo_colaboradores, skiprows=linhas_pular, engine='openpyxl')
+    df_ponto = pd.read_excel(arquivo_ponto, skiprows=linhas_pular_ponto, engine='openpyxl')
+
+    df_colab['Nome'] = df_colab['Nome'].astype(str).str.strip().str.lower()
+    df_ponto['Nome'] = df_ponto['Nome'].astype(str).str.strip().str.lower()
+
+    nomes_colab = set(df_colab['Nome'])
+    nomes_ponto = set(df_ponto['Nome'])
+    faltantes = nomes_colab - nomes_ponto
+
+    df_faltantes = df_colab[df_colab['Nome'].isin(faltantes)][['Nome', 'Equipe']].copy()
+
+    if 'Turno' in df_colab.columns:
+        df_turno = df_colab[['Nome', 'Turno']].copy()
+        df_faltantes = pd.merge(df_faltantes, df_turno, on='Nome', how='left')
+    else:
+        df_faltantes['Turno'] = '—'
 
     try:
-        df_colab = pd.read_excel(arquivo_colaboradores, skiprows=linhas_pular, engine='openpyxl')
-        df_ponto = pd.read_excel(arquivo_ponto, skiprows=linhas_pular_ponto, engine='openpyxl')
+        caminho_turnos = os.path.join('../planilhas', 'turnos_extraidos.xlsx')
+        if os.path.exists(caminho_turnos):
+            df_turnos = pd.read_excel(caminho_turnos, engine='openpyxl')
+            df_turnos['descrição'] = df_turnos['descrição'].astype(str).str.lower().str.strip()
 
-        if 'Nome' not in df_colab.columns or 'Nome' not in df_ponto.columns:
-            print("ERRO: A coluna 'Nome' não foi encontrada em um dos arquivos.")
-            return dados_unificados
+            df_faltantes['Código do Turno'] = '—'
+            df_faltantes['1ª Entrada prevista'] = '—'
 
-        nomes_colab = set(df_colab['Nome'].dropna().astype(str).str.strip())
-        nomes_ponto = set(df_ponto['Nome'].dropna().astype(str).str.strip())
-        nomes_faltantes = nomes_colab - nomes_ponto
-        print(f"Total de colaboradores sem registro de ponto: {len(nomes_faltantes)}")
+            for i, row in df_faltantes.iterrows():
+                turno_colab = str(row['Turno']).lower().strip()
+                codigo_encontrado = ''
+                entrada_encontrado = ''
+                
+                for _, turno_ref in df_turnos.iterrows():
+                    desc_turno = str(turno_ref['descrição']).lower().strip()
+                    if desc_turno[:12] in turno_colab or turno_colab[:12] in desc_turno:
+                        codigo_encontrado = turno_ref.get('codigo', '—')
+                        entrada_encontrado = turno_ref.get('primeira_entrada_prevista', '—')
+                        break  
+                
+                df_faltantes.at[i, 'Código do Turno'] = codigo_encontrado if codigo_encontrado else '—'
+                df_faltantes.at[i, '1ª Entrada prevista'] = entrada_encontrado if entrada_encontrado else '—'
 
-        col_nome = None
-        for col in dados_unificados.columns:
-            if 'colaboradores' in str(col[0]).lower() and str(col[1]).strip().lower() == 'nome':
-                col_nome = col
-                break
-
-        if not col_nome:
-            print("ERRO: Não foi possível localizar a coluna 'Nome' dentro da aba de colaboradores no arquivo unificado.")
-            return dados_unificados
-
-        dados_unificados[('Relatório Pontomais_-_Colaboradores', 'Faltando no registro de ponto')] = \
-            dados_unificados[col_nome].apply(
-                lambda x: str(x).strip() if str(x).strip() in nomes_faltantes else ''
-            )
-
-        print("Coluna 'Faltando no registro de ponto' adicionada com sucesso ao arquivo unificado.")
-        return dados_unificados
-
+            print("Códigos de turno e primeira entrada associados com sucesso.")
+        else:
+            print("Atenção: Arquivo 'turnos_extraidos.xlsx' não encontrado na pasta '../planilhas'.")
     except Exception as e:
-        print(f"Erro durante a comparação: {e}")
-        return dados_unificados
+        print(f"Erro ao associar código de turno e entrada: {e}")
 
-def salvar_arquivo_excel(dados_unificados, arquivo_saida):
+    return dados_unificados, df_faltantes
+
+def salvar_arquivo_excel(dados_unificados, df_faltantes, arquivo_saida):
     print(f"\nSalvando e formatando o arquivo final: '{arquivo_saida}'...")
-    try:
-        with pd.ExcelWriter(arquivo_saida, engine='openpyxl') as writer:
-            dados_unificados.to_excel(writer, sheet_name='Dados Unificados')
-            worksheet = writer.sheets['Dados Unificados']
 
-            for i, column in enumerate(dados_unificados.columns):
-                header_level_1 = len(str(column[0]))
-                header_level_2 = len(str(column[1]))
-                max_len_data = 0
-                if not dados_unificados[column].empty:
-                    max_len_data = dados_unificados[column].astype(str).map(len).max()
-                column_width = max(header_level_1, header_level_2, max_len_data) + 2
-                column_letter = get_column_letter(i + 2)
-                worksheet.column_dimensions[column_letter].width = column_width
+    if isinstance(dados_unificados.columns, pd.MultiIndex):
+        dados_unificados.columns = [' - '.join([str(x) for x in col if x]).strip() for col in dados_unificados.columns]
 
-        print(f"Sucesso! Arquivo '{arquivo_saida}' finalizado e formatado corretamente.")
-        return True
+    with pd.ExcelWriter(arquivo_saida, engine='openpyxl') as writer:
+        dados_unificados.to_excel(writer, sheet_name='Dados Unificados', index=False)
+        if not df_faltantes.empty:
+            df_faltantes.to_excel(writer, sheet_name='Faltantes', index=False)
 
-    except Exception as e:
-        print(f"Erro ao salvar ou formatar o arquivo final: {e}")
-        return False
+    # Pós-formatação
+    wb = load_workbook(arquivo_saida)
+    for sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+        for cell in ws[1]:
+            cell.font = Font(bold=True)
+
+        for col in ws.columns:
+            max_length = max((len(str(cell.value)) for cell in col if cell.value is not None), default=0)
+            ws.column_dimensions[get_column_letter(col[0].column)].width = max(10, max_length + 2)
+    wb.save(arquivo_saida)
+    print("Arquivo salvo e formatado com sucesso.")
+
 
 def limpar_arquivos_originais(lista_arquivos):
     print("\nIniciando limpeza dos arquivos de origem...")
@@ -183,6 +204,7 @@ def limpar_arquivos_originais(lista_arquivos):
         except OSError as e:
             print(f"   - Erro ao remover o arquivo '{os.path.basename(arquivo)}': {e}")
 
+# Execução
 if __name__ == "__main__":
     arquivos_para_processar = obter_arquivos(diretorio_planilhas, 3)
 
@@ -192,7 +214,6 @@ if __name__ == "__main__":
             print(f"   - {os.path.basename(f)}")
 
         chaves_relatorios = nomes_relatorios(arquivos_para_processar)
-
         dados_unificados = unificar_planilhas(
             lista_arquivos=arquivos_para_processar,
             chaves_cabecalho=chaves_relatorios,
@@ -200,12 +221,8 @@ if __name__ == "__main__":
         )
 
         if dados_unificados is not None:
-            dados_unificados = colaboradores_faltantes(dados_unificados, arquivos_para_processar)
-            sucesso = salvar_arquivo_excel(dados_unificados, arquivo_saida_final)
-
-            if sucesso:
-                print("\nProcesso finalizado. Limpando arquivos originais...")
-                limpar_arquivos_originais(arquivos_para_processar)
-                print("Arquivos da pasta 'planilhas' excluídos com sucesso.")
+            dados_unificados, df_faltantes = colaboradores_faltantes(dados_unificados, arquivos_para_processar)
+            salvar_arquivo_excel(dados_unificados, df_faltantes, arquivo_saida_final)
+            limpar_arquivos_originais(arquivos_para_processar)
     else:
         print("\nProcesso não iniciado devido à falta de arquivos.")

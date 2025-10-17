@@ -141,7 +141,7 @@ def relatorio_colaboradores():
 
         print("\nSucesso! O relatório foi solicitado para download em formato XLS.")
         print("Aguardando 20 segundos para o download ser concluído...")
-        time.sleep(20)
+        time.sleep(30)
 
         #--------------------EXTRAÇÃO PONTO--------------------
         xpath_dropdown_container = "//pm-select[.//span[@title='Tipo do relatório']]//div[contains(@class, 'ng-select-container')]"
@@ -202,7 +202,7 @@ def relatorio_colaboradores():
 
         print("\nSucesso! O relatório foi solicitado para download em formato XLS.")
         print("Aguardando 20 segundos para o download ser concluído...")
-        time.sleep(20)
+        time.sleep(30)
 
         #--------------------EXTRAÇÃO TURNO--------------------
 
