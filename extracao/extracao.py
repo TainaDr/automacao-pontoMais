@@ -106,7 +106,6 @@ def relatorio_colaboradores():
         # Verifica se o painel abriu
         try:
             wait.until(EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'ng-dropdown-panel')]")))
-            print("Dropdown aberto com sucesso!")
         except TimeoutException:
             print("Falha: dropdown ainda não abriu. Tentando clicar novamente com JavaScript...")
             navegador.execute_script("arguments[0].click();", dropdown_alvo)
@@ -154,7 +153,6 @@ def relatorio_colaboradores():
          # Verifica se o painel abriu
         try:
             wait.until(EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'ng-dropdown-panel')]")))
-            print("Dropdown aberto com sucesso!")
         except TimeoutException:
             print("Falha: dropdown ainda não abriu. Tentando clicar novamente com JavaScript...")
             navegador.execute_script("arguments[0].click();", dropdown_alvo)
@@ -216,7 +214,6 @@ def relatorio_colaboradores():
         # Verifica se o painel abriu
         try:
             wait.until(EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'ng-dropdown-panel')]")))
-            print("Dropdown aberto com sucesso!")
         except TimeoutException:
             print("Falha: dropdown ainda não abriu. Tentando clicar novamente com JavaScript...")
             navegador.execute_script("arguments[0].click();", dropdown_alvo)
@@ -247,7 +244,6 @@ def relatorio_colaboradores():
         # Verifica se o painel abriu
         try:
             wait.until(EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'ng-dropdown-panel')]")))
-            print("Dropdown aberto com sucesso!")
         except TimeoutException:
             print("Falha: dropdown ainda não abriu. Tentando clicar novamente com JavaScript...")
             navegador.execute_script("arguments[0].click();", dropdown_alvo)
@@ -271,7 +267,6 @@ def relatorio_colaboradores():
         # Verifica se o painel abriu
         try:
             wait.until(EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'ng-dropdown-panel')]")))
-            print("Dropdown aberto com sucesso!")
         except TimeoutException:
             print("Falha: dropdown ainda não abriu. Tentando clicar novamente com JavaScript...")
             navegador.execute_script("arguments[0].click();", dropdown_alvo)

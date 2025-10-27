@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-import datetime
+from datetime import datetime
 from openpyxl.utils import get_column_letter
 from openpyxl import load_workbook
 from openpyxl.styles import Font
@@ -27,14 +27,13 @@ colunas_a_remover = {
     ]
 }
 
-data_atual = datetime.datetime.now()
+data_atual = datetime.now()
 timestamp_diario = data_atual.strftime("%Y-%m-%d")
 nome_arquivo = f'Pontomais-unificado_{timestamp_diario}.xlsx'
 arquivo_saida_final = os.path.join(diretorio_relatorio, nome_arquivo)
 
 # Obtem arquivos mais recentes 
 def obter_arquivos(diretorio, quantidade):
-    print(f"Buscando os {quantidade} arquivos mais recentes em '{diretorio}'...")
     caminho_completo = os.path.join(diretorio, '*.xlsx')
     lista_de_arquivos = glob.glob(caminho_completo)
 
@@ -64,10 +63,8 @@ def unificar_planilhas(lista_arquivos, chaves_cabecalho, header_row_index):
             nome_arquivo_base = os.path.basename(arquivo).lower()
 
             if 'registros_de_ponto' in nome_arquivo_base:
-                print(f"   - Arquivo '{os.path.basename(arquivo)}' (Relatório de Ponto) -> Pulando {linhas_pular_ponto} linhas.")
                 df = pd.read_excel(arquivo, skiprows=linhas_pular_ponto, header=header_row_index, engine='openpyxl')
             else:
-                print(f"   - Arquivo '{os.path.basename(arquivo)}' -> Pulando {linhas_pular} linhas.")
                 df = pd.read_excel(arquivo, skiprows=linhas_pular, header=header_row_index, engine='openpyxl')
 
             lista_de_dados.append(df)
@@ -80,10 +77,8 @@ def unificar_planilhas(lista_arquivos, chaves_cabecalho, header_row_index):
         print("\nNenhum dado foi lido. O programa será encerrado.")
         return None
 
-    print("\nJuntando os dados com cabeçalhos de múltiplos níveis...")
     dados_unificados = pd.concat(lista_de_dados, axis=1, keys=chaves_cabecalho)
 
-    print("\nRemovendo colunas desnecessárias com base em palavras-chave...")
     colunas_a_remover_final = []
 
     for col_tupla in dados_unificados.columns:
@@ -97,12 +92,11 @@ def unificar_planilhas(lista_arquivos, chaves_cabecalho, header_row_index):
 
     if colunas_a_remover_final:
         dados_unificados = dados_unificados.drop(columns=colunas_a_remover_final)
-        print(f"   - {len(colunas_a_remover_final)} coluna(s) removida(s) com sucesso.")
     else:
         print("   - Nenhuma coluna para remover foi encontrada.")
 
     return dados_unificados
-    
+
 def colaboradores_faltantes(dados_unificados, arquivos, linhas_pular=2, linhas_pular_ponto=3):
     print("\nIniciando comparação entre Colaboradores e Registros de Ponto...")
 
@@ -120,12 +114,15 @@ def colaboradores_faltantes(dados_unificados, arquivos, linhas_pular=2, linhas_p
         print("ERRO: Não foi possível localizar os arquivos de colaboradores ou de registros de ponto.")
         return dados_unificados, pd.DataFrame()
 
+    # Leitura dos arquivos
     df_colab = pd.read_excel(arquivo_colaboradores, skiprows=linhas_pular, engine='openpyxl')
     df_ponto = pd.read_excel(arquivo_ponto, skiprows=linhas_pular_ponto, engine='openpyxl')
 
-    df_colab['Nome'] = df_colab['Nome'].astype(str).str.strip().str.lower()
-    df_ponto['Nome'] = df_ponto['Nome'].astype(str).str.strip().str.lower()
+    # Normaliza os nomes
+    df_colab['Nome'] = df_colab['Nome'].astype(str).str.strip().str.upper()
+    df_ponto['Nome'] = df_ponto['Nome'].astype(str).str.strip().str.upper()
 
+    # Identifica faltantes
     nomes_colab = set(df_colab['Nome'])
     nomes_ponto = set(df_ponto['Nome'])
     faltantes = nomes_colab - nomes_ponto
@@ -162,11 +159,28 @@ def colaboradores_faltantes(dados_unificados, arquivos, linhas_pular=2, linhas_p
                 df_faltantes.at[i, 'Código do Turno'] = codigo_encontrado if codigo_encontrado else '—'
                 df_faltantes.at[i, '1ª Entrada prevista'] = entrada_encontrado if entrada_encontrado else '—'
 
-            print("Códigos de turno e primeira entrada associados com sucesso.")
         else:
             print("Atenção: Arquivo 'turnos_extraidos.xlsx' não encontrado na pasta '../planilhas'.")
     except Exception as e:
         print(f"Erro ao associar código de turno e entrada: {e}")
+
+    # FILTRO POR HORÁRIO ATUAL
+    try:
+        hora_atual = datetime.now().time()
+        print(f"\nHora atual: {hora_atual.strftime('%H:%M')}")
+
+        def entrada_valida(e):
+            try:
+                hora_prevista = datetime.strptime(str(e), "%H:%M").time()
+                return hora_prevista < hora_atual
+            except:
+                return False
+
+        df_faltantes = df_faltantes[df_faltantes['1ª Entrada prevista'].apply(entrada_valida)].copy()
+
+        print(f"\n{len(df_faltantes)} colaboradores estão ausentes após o horário de entrada previsto.")
+    except Exception as e:
+        print(f"Erro durante a comparação de horários: {e}")
 
     return dados_unificados, df_faltantes
 
@@ -192,15 +206,13 @@ def salvar_arquivo_excel(dados_unificados, df_faltantes, arquivo_saida):
             max_length = max((len(str(cell.value)) for cell in col if cell.value is not None), default=0)
             ws.column_dimensions[get_column_letter(col[0].column)].width = max(10, max_length + 2)
     wb.save(arquivo_saida)
-    print("Arquivo salvo e formatado com sucesso.")
-
+    print("\nArquivo salvo e formatado com sucesso.")
 
 def limpar_arquivos_originais(lista_arquivos):
     print("\nIniciando limpeza dos arquivos de origem...")
     for arquivo in lista_arquivos:
         try:
             os.remove(arquivo)
-            print(f"   - Arquivo '{os.path.basename(arquivo)}' removido com sucesso.")
         except OSError as e:
             print(f"   - Erro ao remover o arquivo '{os.path.basename(arquivo)}': {e}")
 
@@ -209,7 +221,7 @@ if __name__ == "__main__":
     arquivos_para_processar = obter_arquivos(diretorio_planilhas, 3)
 
     if arquivos_para_processar:
-        print("\nArquivos encontrados (do mais antigo para o mais novo):")
+        print("\nArquivos encontrados:")
         for f in arquivos_para_processar:
             print(f"   - {os.path.basename(f)}")
 

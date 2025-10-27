@@ -1,3 +1,6 @@
 planilhas/
 .env
+.venv
 relatorio/
+transformacao/teste.py
+transformacao/valores_turnos.xlsx
