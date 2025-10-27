@@ -99,7 +99,7 @@ def relatorio_colaboradores():
 
         #--------------------EXTRAÇÃO COLABORADORES--------------------
 
-        print("Abrindo dropdown Tipo de relatório...")
+        print("\nAbrindo dropdown Tipo de relatório...")
         navegador.execute_script("arguments[0].scrollIntoView(true);", dropdown_alvo)
         ActionChains(navegador).move_to_element(dropdown_alvo).click().perform()
 
@@ -138,15 +138,15 @@ def relatorio_colaboradores():
         opcao_xls = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), ' XLS ')]")))
         opcao_xls.click()
 
-        print("\nSucesso! O relatório foi solicitado para download em formato XLS.")
-        print("Aguardando 20 segundos para o download ser concluído...")
+        print("Sucesso! O relatório foi solicitado para download em formato XLS.")
+        print("Aguardando 30 segundos para o download ser concluído...")
         time.sleep(30)
 
         #--------------------EXTRAÇÃO PONTO--------------------
         xpath_dropdown_container = "//pm-select[.//span[@title='Tipo do relatório']]//div[contains(@class, 'ng-select-container')]"
         dropdown_alvo = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_dropdown_container)))
 
-        print("Abrindo dropdown Tipo de relatório...")
+        print("\nAbrindo dropdown Tipo de relatório...")
         navegador.execute_script("arguments[0].scrollIntoView(true);", dropdown_alvo)
         ActionChains(navegador).move_to_element(dropdown_alvo).click().perform()
 
@@ -198,8 +198,8 @@ def relatorio_colaboradores():
         opcao_xls = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), ' XLS ')]")))
         opcao_xls.click()
 
-        print("\nSucesso! O relatório foi solicitado para download em formato XLS.")
-        print("Aguardando 20 segundos para o download ser concluído...")
+        print("Sucesso! O relatório foi solicitado para download em formato XLS.")
+        print("Aguardando 30 segundos para o download ser concluído...")
         time.sleep(30)
 
         #--------------------EXTRAÇÃO TURNO--------------------
@@ -207,7 +207,7 @@ def relatorio_colaboradores():
         xpath_dropdown_container = "//pm-select[.//span[@title='Tipo do relatório']]//div[contains(@class, 'ng-select-container')]"
         dropdown_alvo = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_dropdown_container)))
 
-        print("Abrindo dropdown Tipo de relatório...")
+        print("\nAbrindo dropdown Tipo de relatório...")
         navegador.execute_script("arguments[0].scrollIntoView(true);", dropdown_alvo)
         ActionChains(navegador).move_to_element(dropdown_alvo).click().perform()
 
@@ -291,13 +291,13 @@ def relatorio_colaboradores():
         opcao_xls.click()
 
         print("\nSucesso! O relatório foi solicitado para download em formato XLS.")
-        print("Aguardando 20 segundos para o download ser concluído...")
-        time.sleep(20)
+        print("Aguardando 30 segundos para o download ser concluído...")
+        time.sleep(30)
 
         fim_total = time.time()
         tempo_total = fim_total - inicio_total
         
-        print(f"PROCESSO FINALIZADO em {tempo_total:.2f} segundos.")
+        print(f"\nPROCESSO FINALIZADO em {tempo_total:.2f} segundos.")
 
     except Exception as e:
         print(f"\n Ocorreu um erro: {e}")

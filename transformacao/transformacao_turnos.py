@@ -1,41 +1,78 @@
 import pandas as pd
 import os
-import glob
 import re
+import glob
 
+# Pasta onde os arquivos estão
 pasta_planilhas = '../planilhas'
-nome_arquivo_saida = 'turnos_extraidos.xlsx'
 
-caminho_arquivo = os.path.join(pasta_planilhas, nome_arquivo_saida)
+# Padrão para o arquivo de turnos (dinâmico)
+padrao_arquivo = os.path.join(pasta_planilhas, 'Pontomais_-_Turnos_-*.xlsx')
 
-if not os.path.exists(caminho_arquivo):
-    print(f"ERRO: O arquivo '{nome_arquivo_saida}' não foi encontrado em '{pasta_planilhas}'.")
+# Lista todos os arquivos que correspondem ao padrão
+arquivos_encontrados = glob.glob(padrao_arquivo)
+
+if not arquivos_encontrados:
+    print(f"ERRO: Nenhum arquivo encontrado com o padrão 'Pontomais_-_Turnos_-*' em '{pasta_planilhas}'.")
 else:
-    print(f"Lendo o arquivo '{caminho_arquivo}'...")
+    # Seleciona o primeiro arquivo encontrado (ou você pode usar max para o mais recente)
+    caminho_arquivo_entrada = max(arquivos_encontrados, key=os.path.getctime)
+    print(f"Lendo o arquivo '{caminho_arquivo_entrada}'...")
+
     try:
-        # Lê a planilha Excel com os dados dos turnos
-        df = pd.read_excel(caminho_arquivo, engine='openpyxl')
+        # Lê a planilha Excel
+        df = pd.read_excel(caminho_arquivo_entrada, engine='openpyxl')
 
-        # Define um padrão que captura horários no formato HH:MM
-        padrao_horario = re.compile(r'(\d{2}:\d{2})')
+        # Coluna C (índice 1)
+        coluna_turnos = df.iloc[:, 1]
 
-        entradas = []  # armazena a primeira entrada de cada descrição
-        for descricao in df['descrição']:
-            if isinstance(descricao, str):
-                match = padrao_horario.search(descricao)  # procura o primeiro horário na descrição
-                if match:
-                    entradas.append(match.group(1))  # adiciona o horário encontrado
-                else:
-                    entradas.append(None)  # Se não encontrar, adiciona None
+        # Filtra apenas os valores que começam com '0'
+        valores_filtrados = coluna_turnos.dropna()
+        valores_filtrados = valores_filtrados[valores_filtrados.astype(str).str.startswith('0')].reset_index(drop=True)
+
+        # Cria DataFrame apenas com os turnos filtrados
+        df_filtrado = pd.DataFrame({'raw': valores_filtrados})
+
+        # Separa o código inicial da descrição usando '-'
+        codigos = []
+        descricoes = []
+        for valor in df_filtrado['raw']:
+            partes = valor.split('-', 1)
+            if len(partes) == 2:
+                codigo = partes[0].strip()
+                descricao = partes[1].strip()
             else:
-                entradas.append(None)  # Caso a descrição não seja string
+                codigo = partes[0].strip()
+                descricao = ''
+            codigos.append(codigo)
+            descricoes.append(descricao)
 
-        # Adiciona a coluna 'primeira_entrada_prevista' com os horários extraídos
-        df['primeira_entrada_prevista'] = entradas
+        df_filtrado['codigo'] = codigos
+        df_filtrado['descrição'] = descricoes
 
-        # Salva a planilha atualizada
-        df.to_excel(caminho_arquivo, index=False)
-        print(f"Coluna 'primeira_entrada_prevista' adicionada e arquivo atualizado com sucesso em '{caminho_arquivo}'.")
+        # Extrai o primeiro horário de cada descrição
+        padrao_horario = re.compile(r'(\d{2}:\d{2})')
+        entradas = []
+        for descricao in df_filtrado['descrição']:
+            if isinstance(descricao, str):
+                match = padrao_horario.search(descricao)
+                if match:
+                    entradas.append(match.group(1))
+                else:
+                    entradas.append(None)
+            else:
+                entradas.append(None)
+
+        df_filtrado['primeira_entrada_prevista'] = entradas
+
+        # Mantém apenas as colunas desejadas na ordem: código, descrição, primeira_entrada_prevista
+        df_final = df_filtrado[['codigo', 'descrição', 'primeira_entrada_prevista']]
+
+        # Salva o arquivo final
+        nome_arquivo_saida = 'turnos_extraidos.xlsx'
+        caminho_arquivo_saida = os.path.join(pasta_planilhas, nome_arquivo_saida)
+        df_final.to_excel(caminho_arquivo_saida, index=False)
+        print(f"Arquivo '{nome_arquivo_saida}' gerado com sucesso com colunas separadas e horário extraído.")
 
     except Exception as e:
         print(f"Erro ao processar o arquivo: {e}")
