@@ -3,17 +3,14 @@ import os
 import re
 import glob
 
-# Pasta onde os arquivos estão
-pasta_planilhas = '../planilhas'
-
-# Padrão para o arquivo de turnos (dinâmico)
-padrao_arquivo = os.path.join(pasta_planilhas, 'Pontomais_-_Turnos_-*.xlsx')
+base_dir = os.path.dirname(os.path.abspath(__file__))
+padrao_arquivo = os.path.join(base_dir, '..', 'planilhas',  'Pontomais_-_Turnos_-*.xlsx')
 
 # Lista todos os arquivos que correspondem ao padrão
 arquivos_encontrados = glob.glob(padrao_arquivo)
 
 if not arquivos_encontrados:
-    print(f"ERRO: Nenhum arquivo encontrado com o padrão 'Pontomais_-_Turnos_-*' em '{pasta_planilhas}'.")
+    print(f"ERRO: Nenhum arquivo encontrado com o padrão 'Pontomais_-_Turnos_-*' em 'planilhas'.")
 else:
     # Seleciona o primeiro arquivo encontrado (ou você pode usar max para o mais recente)
     caminho_arquivo_entrada = max(arquivos_encontrados, key=os.path.getctime)
@@ -70,7 +67,7 @@ else:
 
         # Salva o arquivo final
         nome_arquivo_saida = 'turnos_extraidos.xlsx'
-        caminho_arquivo_saida = os.path.join(pasta_planilhas, nome_arquivo_saida)
+        caminho_arquivo_saida = os.path.join(base_dir, '..', 'planilhas', nome_arquivo_saida)
         df_final.to_excel(caminho_arquivo_saida, index=False)
         print(f"Arquivo '{nome_arquivo_saida}' gerado com sucesso com colunas separadas e horário extraído.")
 

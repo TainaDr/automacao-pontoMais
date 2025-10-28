@@ -6,8 +6,10 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 import glob
 
-diretorio_planilhas = '../planilhas'
-diretorio_relatorio = '../relatorio'
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
+diretorio_planilhas = os.path.join(base_dir, '..', 'planilhas')
+diretorio_relatorio = os.path.join(base_dir, '..', 'relatorio')
 
 os.makedirs(diretorio_relatorio, exist_ok=True)
 
@@ -136,7 +138,7 @@ def colaboradores_faltantes(dados_unificados, arquivos, linhas_pular=2, linhas_p
         df_faltantes['Turno'] = '—'
 
     try:
-        caminho_turnos = os.path.join('../planilhas', 'turnos_extraidos.xlsx')
+        caminho_turnos = os.path.join(base_dir, '..', 'planilhas', 'turnos_extraidos.xlsx')
         if os.path.exists(caminho_turnos):
             df_turnos = pd.read_excel(caminho_turnos, engine='openpyxl')
             df_turnos['descrição'] = df_turnos['descrição'].astype(str).str.lower().str.strip()
