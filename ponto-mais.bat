@@ -8,6 +8,18 @@ for /f "usebackq tokens=1,2 delims==" %%a in (".env") do (
 
 cd /d "%CAMINHO_ARQUIVO%"
 
+echo Ativando ambiente virtual...
+call .venv\Scripts\activate.bat
+
+if %errorlevel% neq 0 (
+    echo ERRO: Nao foi possivel encontrar ou ativar o ambiente virtual.
+    echo Verifique se a pasta .venv esta em %CAMINHO_ARQUIVO%
+    pause
+    exit /b
+)
+echo Ambiente virtual ativado.
+echo.
+
 echo Executando extracao.py...
 python extracao/extracao.py
 if %errorlevel% neq 0 (
